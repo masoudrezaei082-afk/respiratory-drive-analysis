@@ -1,0 +1,39 @@
+# Private inputs and generated artifacts
+inputs/
+data/
+outputs/
+*.csv
+*.tsv
+*.xlsx
+*.xls
+*.sav
+*.dta
+*.rds
+*.parquet
+*.feather
+*.sqlite
+*.db
+*.omv
+
+# Local environments and caches
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Runtime files
+*.log
+*.tmp
+*.swp
+*.png
+*.jpg
+*.jpeg
+*.pdf
+*.doc
+*.docx
