@@ -1,0 +1,33 @@
+cff-version: 1.2.0
+message: "If you use this code, please cite it as below."
+type: software
+title: "Analysis code for: Diaphragm ultrasound and airway occlusion pressure (P0.1) in mechanically ventilated patients with predominantly low respiratory drive: a prospective cohort study"
+version: "2.0.0"
+date-released: "2026-10-27"
+license: MIT
+repository-code: "https://github.com/masoudrezaei082-afk/respiratory-drive-analysis"
+authors:
+  - family-names: "Raeesi Estabragh"
+    given-names: "Reza"
+    affiliation: "Department of Anesthesiology and Pain Medicine, Kerman University of Medical Sciences, Kerman, Iran"
+  - family-names: "Derakhshandeh"
+    given-names: "Hesam"
+    affiliation: "Kerman University of Medical Sciences, Kerman, Iran"
+  - family-names: "Shahabifar"
+    given-names: "Ramita"
+    affiliation: "Department of Radiology, Kerman University of Medical Sciences, Kerman, Iran"
+  - family-names: "Hashemian"
+    given-names: "Morteza"
+    affiliation: "Department of Anesthesiology and Pain Medicine, Kerman University of Medical Sciences, Kerman, Iran"
+  - family-names: "Rahmanian"
+    given-names: "Mohammad"
+    affiliation: "Department of Anesthesiology, Faculty of Medicine, Shiraz University of Medical Sciences, Shiraz, Iran"
+  - family-names: "Ebrahimi Hoshyar"
+    given-names: "Akram"
+    affiliation: "Kerman University of Medical Sciences, Kerman, Iran"
+keywords:
+  - airway occlusion pressure
+  - P0.1
+  - diaphragm ultrasound
+  - respiratory drive
+  - mechanical ventilation

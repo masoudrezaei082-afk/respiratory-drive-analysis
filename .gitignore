@@ -37,3 +37,8 @@ htmlcov/
 *.pdf
 *.doc
 *.docx
+
+# Documents the round-2 scripts write or read beside the code
+manuscript*.md
+Supplementary*.md
+media/
