@@ -2,8 +2,8 @@ cff-version: 1.2.0
 message: "If you use this code, please cite it as below."
 type: software
 title: "Analysis code for: Diaphragm ultrasound and airway occlusion pressure (P0.1) in mechanically ventilated patients with predominantly low respiratory drive: a prospective cohort study"
-version: "2.0.0"
-date-released: "2026-10-27"
+version: "2.0.1"
+date-released: "2026-11-03"
 license: MIT
 repository-code: "https://github.com/masoudrezaei082-afk/respiratory-drive-analysis"
 authors:

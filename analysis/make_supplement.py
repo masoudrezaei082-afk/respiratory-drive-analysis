@@ -1,11 +1,9 @@
 """Build Supplementary_R2.md from the CSV outputs of r2_analysis.py.
 
 Run after r2_analysis.py:  .venv/bin/python make_supplement.py
-Every number in the supplement is read from outputs/ or, for Supplementary
-Table S1, counted from Data/data.csv; none is typed by hand.
+Every number in the supplement is read from outputs/; none is typed by hand.
 """
 import json
-import os
 import re
 from pathlib import Path
 
@@ -18,24 +16,6 @@ TARGET = HERE.parent / "Supplementary_R2.md"
 TITLE = ("Diaphragm ultrasound and airway occlusion pressure (P~0.1~) in mechanically "
          "ventilated patients with predominantly low respiratory drive: a prospective cohort study")
 
-DATA = Path(os.environ.get("RESPDRIVE_DATA", HERE.parents[1] / "Data" / "data.csv"))
-
-# Supplementary Table S1: data.csv column -> label, listed by frequency.
-S1_COLUMNS = {"adjunct_respiratory_muscle_use": "Use of accessory respiratory muscles",
-              "bradypnea": "Bradypnea", "Cheyne_Stokes": "Cheyne--Stokes respiration",
-              "shallow_breath": "Shallow breathing", "Kussmaul": "Kussmaul breathing",
-              "tachypnea": "Tachypnea", "paradoxycal": "Paradoxical breathing", "dyspnea": "Dyspnea",
-              "grunting": "Grunting", "hyperventilationq": "Hyperventilation", "Biot": "Biot breathing",
-              "other_types_of_breathing": "Other breathing pattern"}
-
-
-def breathing_patterns() -> list[tuple[str, int, float]]:
-    d = pd.read_csv(DATA, encoding="utf-8-sig")
-    rows = []
-    for col, label in S1_COLUMNS.items():
-        k = int(d[col].astype(str).str.lower().eq("yes").sum())
-        rows.append((label, k, round(100 * k / len(d), 1)))
-    return sorted(rows, key=lambda r: -r[1])
 
 LABELS = {"DE": "Diaphragmatic excursion", "TFDI": "Diaphragm thickening fraction",
           "PaCO2": "PaCO~2~", "age": "Age", "SOFA": "SOFA score", "RASS": "RASS score",
@@ -68,7 +48,6 @@ def table(header: list[str], rows: list[list[str]]) -> str:
 
 
 def main() -> None:
-    sp = pd.read_csv(OUT / "spearman_univariable.csv")
     ff = pd.read_csv(OUT / "functional_form.csv")
     co = pd.read_csv(OUT / "models_sqrt_scale.csv")
     ne = pd.read_csv(OUT / "nested_models.csv")
@@ -82,17 +61,8 @@ def main() -> None:
 
     parts = [f"*{TITLE}*", "", "**Supplementary Information**", ""]
 
-    parts += ["**Supplementary Table S1. Recorded abnormal breathing patterns in the study cohort.**", "",
-              table(["Pattern", "n", "Percentage (%)"], [[a, b, f"{c:.1f}"] for a, b, c in breathing_patterns()]), "",
-              "*Percentages use the full cohort (N = 141) as denominator. Categories are not mutually exclusive.*", ""]
-
-    rows = [[LABELS[r.variable], r.n, f"{r.rho:.3f}", p_fmt(r.p_value)] for r in sp.itertuples()]
-    parts += ["**Supplementary Table S2. Spearman rank correlations with P~0.1~.**", "",
-              table(["Variable", "n", "Spearman ρ", "p-value"], rows), "",
-              "*Reported descriptively; these correlations were not used to select covariates for the regression models.*", ""]
-
     rows = [[r.index, r.shape, r.r2, r.aic, p_fmt(r.reset_p), "Yes" if r.chosen else "No"] for r in ff.itertuples()]
-    parts += ["**Supplementary Table S3. Functional form of each ultrasound index and coefficients of the separate models (outcome √P~0.1~).**", "",
+    parts += ["**Supplementary Table S1. Functional form of each ultrasound index and coefficients of the separate models (outcome √P~0.1~).**", "",
               f"*Part A. Choice of functional form (n = {n}; all models include age, SOFA score, PaCO~2~, RASS score and sedative exposure).*", "",
               table(["Index", "Form", "R²", "AIC", "RESET p", "Selected"], rows), "",
               "*The simplest form within 2 AIC units of the minimum was selected. The spline is a natural cubic regression spline with four degrees of freedom.*", ""]
@@ -109,7 +79,7 @@ def main() -> None:
              p_fmt(r.p_value), p_fmt(r.p_HC3)] for r in d.itertuples()]
     nrows = [[r.model, r.n, f"{r.r2:.3f}", f"{r.adj_r2:.3f}", f"{r.aic:.1f}"] for r in ne.itertuples()]
     vif = sm["vif_joint_linear"]
-    parts += ["**Supplementary Table S4. Joint model including both ultrasound indices (outcome √P~0.1~).**", "",
+    parts += ["**Supplementary Table S2. Joint model including both ultrasound indices (outcome √P~0.1~).**", "",
               "*Part A. Nested models.*", "",
               table(["Model", "n", "R²", "Adjusted R²", "AIC"], nrows), "",
               (f"*DE added to a model containing TFDI: F~{bt['DE_given_TFDI']['df_num']},{bt['DE_given_TFDI']['df_den']}~ = "
@@ -131,10 +101,10 @@ def main() -> None:
             rows.append([r.analysis, r.index, r.n, p, diff])
     for r in ot.itertuples():
         rows.append([r.analysis.replace("PaCO2", "PaCO~2~"), r.index, r.n, f"R² = {r.r2:.3f}", f"{r.iqr_difference:.2f}"])
-    parts += ["**Supplementary Table S5. Sensitivity analyses.**", "",
+    parts += ["**Supplementary Table S3. Sensitivity analyses.**", "",
               table(["Analysis", "Index", "n", "Test of the ultrasound index (p) or model fit", "Predicted P~0.1~ difference, 25th to 75th percentile (cmH~2~O)"], rows), "",
               ("*Univariable rows are linear regressions of √P~0.1~ on RASS score or on sedative exposure alone. For the interaction "
-               "analyses, the p-value tests the interaction between the ultrasound index and deep sedation (RASS −4 or −5). "
+               "analyses, the p-value tests the interaction between the ultrasound index and a RASS of −4 or −5. "
                f"Primary-model differences for comparison: DE {iqr['DE']:.2f} cmH~2~O, TFDI {iqr['TFDI']:.2f} cmH~2~O. In the primary "
                "analysis three recorded values were set to missing and the rest of each patient's record kept: a DE of 6.1 cm, "
                "outside the range of the cohort; a TFDI of 1.8%, incompatible with the patient's P~0.1~; and a PaCO~2~ that "
@@ -142,7 +112,7 @@ def main() -> None:
 
     rows = [[r.model, LABELS.get(r.term, r.term), f"{r.OR:.2f}", f"{r.ci_lower:.2f} to {r.ci_upper:.2f}", p_fmt(r.p_value)]
             for r in mo.itertuples()]
-    parts += ["**Supplementary Table S6. Exploratory logistic regression of in-hospital mortality on P~0.1~.**", "",
+    parts += ["**Supplementary Table S4. Exploratory logistic regression of in-hospital mortality on P~0.1~.**", "",
               table(["Model", "Term", "Odds ratio", "95% CI", "p-value"], rows), "",
               f"*n = {mo.n.iloc[0]}, {mo.events.iloc[0]} deaths. Exploratory and not pre-specified; no prognostic conclusion is drawn.*", ""]
 

@@ -43,6 +43,7 @@ NOT_FROM_DATA = {
     "0.01": "R² gain of the joint model, 0.878 − 0.867, rounded",
     "0.05": "significance level",
     "0.001": "p-value floor",
+    "10.5281": "Zenodo DOI prefix (Code availability)",
 }
 
 

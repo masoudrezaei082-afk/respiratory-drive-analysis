@@ -193,6 +193,11 @@ def main() -> int:
     summary["n_sedative"] = int(df["sedative"].sum())
     summary["n_deep_rass"] = int(df["deep"].sum())
     summary["n_rass_minus5"] = int((df["RASS"] == -5).sum())
+    # Low RASS with low GCS: depressed consciousness from the illness, not deep
+    # pharmacological sedation (Dr Raeisi, 2026-11-03).
+    summary["median_gcs_rass_le_minus4"] = float(df.loc[df["RASS"] <= -4, "Mean_GCS"].median())
+    summary["median_gcs_rass_above_minus4"] = float(df.loc[df["RASS"] > -4, "Mean_GCS"].median())
+    summary["n_gcs_le8_rass_le_minus4"] = int(((df["RASS"] <= -4) & (df["Mean_GCS"] <= 8)).sum())
 
     de_term, de_tab = choose_shape(cc, "DE")
     tf_term, tf_tab = choose_shape(cc, "TFDI")
@@ -324,6 +329,18 @@ def main() -> int:
     put_back = df.index[df["DE_recorded"].notna() & df["DE"].isna()]
     summary["DE_max_retained"] = round(float(df["DE"].max()), 1)
     summary["cooks_d_implausible_DE"] = round(float(cooks[put_back].max()), 1)
+    # Three admission numbers occur twice and could not be resolved from the source
+    # records (report.md, B9). Every row carrying a repeated number is dropped.
+    ids = df["admission_id"].astype(str).str.strip().str.strip("`")
+    dup = ids.duplicated(keep=False)
+    summary["n_duplicate_rows"] = int(dup.sum())
+    summary["n_duplicate_ids"] = int(ids[dup].nunique())
+    print("rows sharing an admission number:", [int(i) + 1 for i in df.index[dup]])
+    nodup = cc[~dup.reindex(cc.index)]
+    for var, f in [("DE", f_de), ("TFDI", f_tf)]:
+        r = smf.ols(f, data=nodup).fit()
+        other.append({"analysis": "excluding rows with a repeated admission number", "index": var,
+                      "n": int(r.nobs), "r2": round(r.rsquared, 4), "iqr_difference": iqr_point(r, nodup, var)})
     pd.DataFrame(other).to_csv(OUT / "other_sensitivity.csv", index=False)
     summary["set_missing"] = [{"row": row, "variable": col, "recorded": v} for (row, col), v in IMPLAUSIBLE.items()]
 
