@@ -47,7 +47,8 @@ COVARIATES = ["age", "SOFA", "PaCO2", "RASS", "sedative"]
 COV = " + ".join(COVARIATES)
 
 # Candidate shapes for each index. The one with the lowest AIC is used, the
-# simpler one when AICs are within 2; splines are capped at 4 df for n = 138.
+# simpler one when AICs are within 2. cr(df=4) gives four basis functions that
+# sum to one, so beside the intercept a spline has 3 df (two interior knots).
 SHAPES = {
     "DE": {"linear": "DE", "quadratic": "DE + I(DE**2)", "spline": "cr(DE, df=4)"},
     "TFDI": {"linear": "TFDI", "quadratic": "TFDI + I(TFDI**2)", "spline": "cr(TFDI, df=4)"},
@@ -244,7 +245,11 @@ def main() -> int:
     for lab, m in [("DE", m_de), ("TFDI", m_tf)]:
         r = m.model.fit(cov_type="HC3")
         idx = [m.params.index.get_loc(n) for n in m.params.index if lab in n]
-        hc3[lab] = float(r.wald_test(np.eye(len(m.params))[idx], scalar=True).pvalue)
+        E = np.eye(len(m.params))
+        # spline basis coefficients are not estimable on their own (the basis sums
+        # to one); test the estimable contrasts against the last basis function
+        L = np.array([E[i] - E[idx[-1]] for i in idx[:-1]]) if "cr(" in m.params.index[idx[0]] else E[idx]
+        hc3[lab] = float(r.wald_test(L, scalar=True).pvalue)
     summary["block_tests_HC3_p"] = hc3
 
     nested = pd.DataFrame([
